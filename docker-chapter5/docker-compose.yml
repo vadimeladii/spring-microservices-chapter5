@@ -1,0 +1,46 @@
+services:
+
+  licensingservice:
+    image: vadimeladii7/licensing-service-chapter5:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - "SPRING_PROFILES_ACTIVE=dev"
+      - "SPRING_CLOUD_CONFIG_URI=http://configserver:8071"
+    networks:
+      - backend
+    depends_on:
+      configserver:
+        condition: service_started
+      database:
+        condition: service_healthy
+
+  configserver:
+    image: vadimeladii7/config-server-chapter5:latest
+    ports:
+      - "8071:8071"
+    networks:
+      - backend
+
+  database:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "ostock_dev"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/1-init.sql
+      - ./data.sql:/docker-entrypoint-initdb.d/2-data.sql
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  backend:
+    driver: bridge

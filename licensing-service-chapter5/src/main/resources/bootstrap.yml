@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: licensing-service-chapter5
+  profiles:
+    active: default
+  cloud:
+    config:
+      uri: http://localhost:8071
